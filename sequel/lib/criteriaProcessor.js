@@ -830,6 +830,31 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
 
       break;
+
+    default:
+      // Default handling of unknown operators.
+      if(this.parameterized) {
+        var type;
+        var typeDelim = '::';
+        if (key.indexOf(typeDelim) > -1) {
+          // key contains type information: operator::type.
+          var keyAndType = key.split(typeDelim);
+          key = keyAndType[0];
+          type = keyAndType[1];
+        }
+        this.values.push(value);
+        if (type) {
+          str = key + ' ' + 'CAST($' + this.paramCount + ' AS ' + type + ' )';
+        } else {
+          str = key + ' ' + '$' + this.paramCount;
+        }
+      }
+      else {
+        if(_.isString(value) && !escapedDate) {
+          value = '"' + utils.escapeString(value) + '"';
+        }
+        str = key + ' ' + value;
+      }
   }
 
   // Bump paramCount
